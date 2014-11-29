@@ -1,3 +1,5 @@
+import time
+
 from pytest import fixture
 
 from ssdb import SSDBClient
@@ -23,8 +25,37 @@ def prefix():
 def test_getset(client, prefix):
     client.set(prefix % 'abc', 'zhangyue')
     assert client.get(prefix % 'abc') == 'zhangyue'
+    assert client.exists(prefix % 'abc')
     client.delete(prefix % 'abc')
     assert client.get(prefix % 'abc') is None
+    assert client.exists(prefix % 'abc') is False
+
+
+def test_setx(client, prefix):
+    client.setx(prefix % 'abc', 'zhangyue', 1)
+    assert client.get(prefix % 'abc') == 'zhangyue'
+    time.sleep(1.1)
+    assert client.get(prefix % 'abc') is None
+
+
+def test_expire(client, prefix):
+    client.set(prefix % 'abc', 'zhangyue')
+    client.expire(prefix % 'abc', 2)
+    time.sleep(0.5)
+    assert client.get(prefix % 'abc') == 'zhangyue'
+    assert client.ttl(prefix % 'abc') == 1
+    time.sleep(1.6)
+    assert client.get(prefix % 'abc') is None
+
+
+def test_setnx(client, prefix):
+    client.set(prefix % 'abc', 'zhangyue')
+    client.setnx(prefix % 'abc', 'will not set')
+    assert client.get(prefix % 'abc', 'zhangyue')
+    client.delete(prefix % 'abc')
+    client.setnx(prefix % 'abc', 'willset')
+    assert client.get(prefix % 'abc', 'willset')
+    client.delete(prefix % 'abc')
 
 
 def test_zset(client, prefix):
@@ -62,3 +93,16 @@ def test_queue(client, prefix):
     assert client.qpop(prefix % 'abc') == 'y'
     assert client.qpop(prefix % 'abc') == 'z'
     assert client.qsize(prefix % 'abc') == 0
+
+
+def test_str(client, prefix):
+    client.setbit(prefix % 'abc', 0, 1)
+    client.setbit(prefix % 'abc', 1, 0)
+    client.setbit(prefix % 'abc', 2, 1)
+    assert client.getbit(prefix % 'abc', 0) == 1
+    assert client.getbit(prefix % 'abc', 1) == 0
+    assert client.getbit(prefix % 'abc', 2) == 1
+    assert client.countbit(prefix % 'abc') == 2
+    client.set(prefix % 'abc', 'abcdefg')
+    assert client.strlen(prefix % 'abc', 7)
+    assert client.substr(prefix % 'abc', 2, 3) == 'cde'
