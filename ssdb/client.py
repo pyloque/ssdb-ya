@@ -11,9 +11,9 @@ def single_str(result):
 
 
 def single_bool(result):
-    if result:
-        return True
-    return False
+    if not result:
+        return None
+    return result[0] != '0'
 
 
 def single_int(result):
@@ -141,9 +141,13 @@ class SSDBClient(object):
                     parameters.append(v)
             else:
                 parameters.append(arg)
-        connection = self.pool.get_connection()
-        connection.send_command(cmd, *map(str, parameters))
-        result = connection.get_result()
+        try:
+            connection = self.pool.get_connection()
+            connection.send_command(cmd, *map(str, parameters))
+            result = connection.get_result()
+        finally:
+            if connection:
+                self.pool.release(connection)
         tr = self.translators.get(cmd)
         if not tr:
             return result
