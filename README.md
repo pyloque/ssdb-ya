@@ -13,12 +13,12 @@ http://ssdb.io
     client.expire('abc', 2)
     client.ttl('abc')
     client.multi_zset('abc', {'a': 5, 'b': 6, 'c': 7})
-    client.multi_zget('abc', ['a', 'b', 'c'])
-    client.multi_zget('abc', 'a', 'b', 'c')
+    client.multi_zget('abc', ['a', 'b', 'c'])  # return {'a': 5, 'b': 6, 'c': 7}
+    client.multi_zget('abc', 'a', 'b', 'c')  # return {'a': 5, 'b': 6, 'c': 7}
     client.zclear('abc')
     client.multi_hset('abc', {'a': 'x', 'b': 'y', 'c': 'z'})
-    client.multi_hget('abc', ['a', 'b', 'c'])
-    client.multi_hget('abc', 'a', 'b', 'c')
+    client.multi_hget('abc', ['a', 'b', 'c'])  # return {'a': 'x', 'b': 'y', 'c': 'z'}
+    client.multi_hget('abc', 'a', 'b', 'c')  # return {'a': 'x', 'b': 'y', 'c': 'z'}
     client.hclear('abc')
     client.qpush('abc', 'x')
     client.qpop('abc')
@@ -31,6 +31,7 @@ http://ssdb.io
 ```
 
 install ssdb in localhost with default settings
+
 run full testcases with following commands
 
 ```
