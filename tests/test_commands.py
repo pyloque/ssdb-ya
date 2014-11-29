@@ -66,6 +66,9 @@ def test_zset(client, prefix):
     size = client.zsize(prefix % 'abc')
     assert values == {'x': 10, 'y': 100, 'z': 1000}
     assert size == 3
+    assert client.zexists(prefix % 'abc', 'x')
+    client.zincr(prefix % 'abc', 'x', 20)
+    assert client.zget(prefix % 'abc', 'x') == 30
     client.zclear(prefix % 'abc')
     size = client.zsize(prefix % 'abc')
     assert size == 0
@@ -79,6 +82,11 @@ def test_hset(client, prefix):
     size = client.hsize(prefix % 'abc')
     assert values == {'x': 'good', 'y': 'bad', 'z': 'evil'}
     assert size == 3
+    assert client.hexists(prefix % 'abc', 'x')
+    client.hset(prefix % 'abc', 'x', 2)
+    assert client.hget(prefix % 'abc', 'x') == '2'
+    client.hincr(prefix % 'abc', 'x', 3)
+    assert client.hget(prefix % 'abc', 'x') == '5'
     client.hclear(prefix % 'abc')
     size = client.zsize(prefix % 'abc')
     assert size == 0
@@ -106,3 +114,32 @@ def test_str(client, prefix):
     client.set(prefix % 'abc', 'abcdefg')
     assert client.strlen(prefix % 'abc', 7)
     assert client.substr(prefix % 'abc', 2, 3) == 'cde'
+
+
+def test_multi(client, prefix):
+    data = {'x': 'a', 'y': 'b', 'z': 'c'}
+    client.multi_set(data)
+    values = client.multi_get(data.keys())
+    assert values == data
+    client.multi_del(data.keys())
+    values = client.multi_get(data.keys())
+    assert values == {}
+
+
+def test_scan(client, prefix):
+    data = {prefix % 'abc' + str(i): str(i) for i in range(10)}
+    client.multi_set(data)
+    values = client.keys(prefix % 'abc3', prefix % 'abc6', 10)
+    assert values == [prefix % 'abc4', prefix % 'abc5', prefix % 'abc6']
+    values = client.scan(prefix % 'abc3', prefix % 'abc6', 10)
+    assert values == {
+        prefix % 'abc4': '4',
+        prefix % 'abc5': '5',
+        prefix % 'abc6': '6'
+    }
+    values = client.rscan(prefix % 'abc6', prefix % 'abc3', 10)
+    assert values == {
+        prefix % 'abc5': '5',
+        prefix % 'abc4': '4',
+        prefix % 'abc3': '3'
+    }

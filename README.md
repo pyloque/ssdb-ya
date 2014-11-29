@@ -35,6 +35,8 @@ install ssdb in localhost with default settings
 run full testcases with following commands
 
 ```
+    virtualenv .py
+    source hello
     easy_install pytest
     python setup.py test
 ```
