@@ -7,7 +7,7 @@ import threading
 from Queue import LifoQueue, Full, Empty
 
 from .errors import *  # noqa
-from .protocal import SimpleCoder  # noqa
+from .protocol import SimpleCoder  # noqa
 
 
 class Connection(object):
