@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-import pytest
 
 from setuptools import setup
 from setuptools.command.test import test as TestCommand
@@ -19,6 +18,10 @@ class SetupTest(TestCommand):
         self.test_suite = True
 
     def run_tests(self):
+        try:
+            import pytest
+        except ImportError:
+            return
         errno = pytest.main(self.test_args)
         sys.exit(errno)
 
