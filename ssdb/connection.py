@@ -23,11 +23,11 @@ class Connection(object):
         self.connect_timeout = connect_timeout
         self.timeout = timeout
         self.sock = None
-        self.connect()
 
     def connect(self):
         if self.sock:
             return
+        sock = None
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
@@ -45,6 +45,8 @@ class Connection(object):
         if not self.password:
             return
         self.send_command('auth', self.password)
+        if self.get_result() != ['1']:
+            raise AuthenticateError('maybe wrong password')
 
     def send_command(self, *args):
         try:
@@ -76,6 +78,9 @@ class Connection(object):
             pass
         self.sock = None
 
+    def is_closed(self):
+        return self.sock is None
+
     def __del__(self):
         self.disconnect()
 
@@ -102,12 +107,14 @@ class ConnectionPool(object):
 
     def get_connection(self):
         self.ensure_safe()
+        connection = None
         try:
             connection = self.queue.get(block=True, timeout=self.timeout)
         except Empty:
             raise ConnectionError('connection pool is full')
         if not connection:
             connection = self.make_connection()
+        connection.connect()
         return connection
 
     def make_connection(self):
@@ -118,6 +125,12 @@ class ConnectionPool(object):
     def release(self, connection):
         self.ensure_safe()
         if connection.pid != self.pid:
+            return
+        if connection.is_closed:
+            try:
+                self.connections.remove(connection)
+            except ValueError:
+                pass
             return
         try:
             self.queue.put_nowait(connection)

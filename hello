@@ -1,1 +1,18 @@
-source .py/bin/activate
+pushd . > /dev/zero
+BASE=$(pwd)/.py
+source $BASE/bin/activate
+
+cdlib()
+{
+    cd $BASE/lib/python2.7/site-packages
+}
+
+cdwork()
+{
+    popd > /dev/zero
+}
+
+byte()
+{
+    deactivate
+}

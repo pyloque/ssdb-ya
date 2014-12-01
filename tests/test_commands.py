@@ -1,8 +1,8 @@
 import time
 
-from pytest import fixture
+from pytest import fixture, raises
 
-from ssdb import SSDBClient
+from ssdb import SSDBClient, errors
 
 
 @fixture(scope='module')
@@ -20,6 +20,11 @@ def prefix():
     import os
     import base64
     return base64.b64encode(os.urandom(64)) + ':%s'
+
+
+def test_invalid_command(client, prefix):
+    with raises(errors.ServerError):
+        client.invalid('a', 'b', 'c')
 
 
 def test_getset(client, prefix):

@@ -141,9 +141,11 @@ class SSDBClient(object):
                     parameters.append(v)
             else:
                 parameters.append(arg)
+        parameters = map(str, parameters)
+        connection = None
         try:
             connection = self.pool.get_connection()
-            connection.send_command(cmd, *map(str, parameters))
+            connection.send_command(cmd, *parameters)
             result = connection.get_result()
         finally:
             if connection:
