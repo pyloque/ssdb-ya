@@ -131,7 +131,7 @@ class ConnectionPool(object):
                 self.connections.remove(connection)
             except ValueError:
                 pass
-            return
+            connection = None
         try:
             self.queue.put_nowait(connection)
         except Full:
